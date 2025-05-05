@@ -4,20 +4,6 @@ import {useStorage} from "@vueuse/core";
 // import { useAsyncData } from '#app'
 import boardData from '~/content/taskboards/task-board.json'
 import {useId} from 'vue'
-
-export interface TaskBoard {
-  name: string
-  columns: Array<{
-    id: string
-    name: string
-    tasks?: Array<{
-      id: string
-      name: string
-      description: string
-    }>
-  }>
-}
-
 // interface ApiResponse {
 //   success: boolean;
 //   message: string;
@@ -26,6 +12,16 @@ export interface TaskBoard {
 export const useBoardStore = defineStore('boardStore', () => {
 
   const board = useStorage<TaskBoard>("board", boardData)
+
+  //getters
+  const getTask = computed(() => {
+    return (taskId:string) => {
+      for (const column of board.value.columns) {
+        const task = column.tasks?.find(task => task.id === taskId)
+        if(task) return task
+      }
+    }
+  })
 
   //actions
   function addColumn(columnName: string) {
@@ -41,7 +37,10 @@ export const useBoardStore = defineStore('boardStore', () => {
 
   return {
     board,
+
+    getTask,
+
     addColumn,
-    deleteColumn
+    deleteColumn,
   }
 })

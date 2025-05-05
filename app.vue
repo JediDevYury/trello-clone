@@ -1,3 +1,5 @@
+<script setup lang="ts"></script>
+
 <template>
   <Html class="bg-emerald-500">
     <div>
@@ -5,5 +7,3 @@
     </div>
   </Html>
 </template>
-<script setup lang="ts">
-</script>
