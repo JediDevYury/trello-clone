@@ -12,10 +12,11 @@ const task = computed(() => {
 
 
 function deleteTask() {
-  console.log(route.params.id);
-  
-  if(route.params.id && typeof route.params.id === 'string') {
-    const success = boardStore.deleteTask(route.params.id)
+  const isTaskId = !!route.params.id && typeof route.params.id === 'string'
+
+  if(isTaskId) {
+    const success = boardStore.deleteTask(route.params.id as string)
+
     if(success) {
       router.push('/')
     }
