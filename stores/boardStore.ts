@@ -9,6 +9,11 @@ interface AddTaskProps {
   columnIndex: number
 }
 
+export interface MoveTaskParams {
+  taskIndex: number
+  columnIndex: number
+  toColumnIndex: number
+}
 
 export const useBoardStore = defineStore('boardStore', () => {
 
@@ -27,6 +32,19 @@ export const useBoardStore = defineStore('boardStore', () => {
   //actions
 
   //add task
+
+  function moveTask({
+    taskIndex,
+    columnIndex,
+    toColumnIndex,
+  }: MoveTaskParams) {
+    const task = board.value.columns[columnIndex].tasks?.splice(taskIndex, 1)[0]
+
+    if(task) {
+      board.value.columns[toColumnIndex].tasks?.push(task)
+    }
+  }
+
   function addTask({
     name,
     columnIndex,
@@ -46,7 +64,7 @@ export const useBoardStore = defineStore('boardStore', () => {
       const taskIndex = column.tasks?.findIndex(task => task.id === taskId)
 
       const isTaskIndexValid = taskIndex !== -1 && taskIndex !== undefined;
-      
+
       if(isTaskIndexValid) {
         column.tasks?.splice(taskIndex, 1)
         return true
@@ -74,6 +92,8 @@ export const useBoardStore = defineStore('boardStore', () => {
     //task
     addTask,
     deleteTask,
+    moveTask,
+    
     //column
     addColumn,
     deleteColumn,

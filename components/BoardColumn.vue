@@ -31,10 +31,46 @@ function createTask() {
   })
   newTaskName.value = ''
 }
+type PickUpTaskParams = {
+  fromTaskIndex: number;
+  fromColumnIndex: number;
+};
+
+//pick up task
+function pickUpTask(event: DragEvent, {
+  fromTaskIndex,
+  fromColumnIndex,
+}: PickUpTaskParams) {
+  if(event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.dropEffect = 'move'
+    event.dataTransfer.setData('from-task-index', fromTaskIndex.toString())
+    event.dataTransfer.setData('from-column-index', fromColumnIndex.toString())
+  }
+}
+
+//drop task
+function dropTask(event: DragEvent, toColumnIndex: number) {
+  const columnIndex = event.dataTransfer?.getData('from-column-index')
+  const taskIndex = event.dataTransfer?.getData('from-task-index')
+
+  if(columnIndex && taskIndex) {
+    boardStore.moveTask({
+      taskIndex: Number.parseInt(taskIndex),
+      columnIndex: Number.parseInt(columnIndex),
+      toColumnIndex,
+    })
+  }
+}
 </script>
 
 <template>
-  <UContainer class="column">
+  <UContainer 
+    class="column" 
+    @dragenter.prevent 
+    @dragover.prevent 
+    @drop.stop="dropTask($event, columnIndex)"
+  >
     <div class="column-header mb-4">
       <div>
         <UInput v-if="editNameState" v-model="column.name" type="text"  />
@@ -54,8 +90,15 @@ function createTask() {
       </div>
     </div>
     <ul>
-      <li v-for="task in column.tasks" :key="task.id">
-        <UCard class="mb-4" @click="goToTask(task.id)">
+      <li v-for="(task, tastIndex) in column.tasks" :key="task.id">
+        <UCard class="mb-4" 
+          draggable="true"
+          @click="goToTask(task.id)" 
+          @dragstart="pickUpTask($event, {
+            fromTaskIndex: tastIndex,
+            fromColumnIndex: columnIndex,
+          })"
+        >
           <strong>{{ task.name }}</strong>
           <p>{{ task.description }}</p>
         </UCard>
