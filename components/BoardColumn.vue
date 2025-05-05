@@ -1,22 +1,39 @@
 <template>
-  <div class="bg-gray-100 rounded-lg p-4 w-80">
-    <h2 class="font-bold text-xl mb-4">{{ column.name }}</h2>
-    <div class="space-y-2">
-      <TaskItem 
-        v-for="task in column.tasks" 
-        :key="task.id" 
-        :task="task" 
-      />
+  <UContainer class="column" >
+    <div class="column-header mb-4">
+      <div>
+        <UInput v-if="editNameState" type="text" v-model="column.name"/>
+        <h2 v-else>{{column.name}}</h2>
+      </div>
+      <div>
+        <UButton @click="editNameState = !editNameState" icon="i-heroicons-pencil-square" class="mr-2"/>
+        <UButton @click="deleteColumn(columnIndex)" icon="i-heroicons-trash" color="red"/>
+      </div>
     </div>
-  </div>
+    <ul>
+      <li v-for="task in column.tasks" :key="task.id">
+        <UCard class="mb-4">
+          <strong>{{ task.name }}</strong>
+          <p>{{ task.description }}</p>
+        </UCard>
+      </li>
+    </ul>
+  </UContainer>
 </template>
 
 <script setup lang="ts">
-import type { TaskBoard } from '~/store/boardStore';
+import {type TaskBoard, useBoardStore} from '~/store/boardStore';
+import {ref} from "vue";
 
+const boardStore = useBoardStore()
 type Column = TaskBoard['columns'][0];
 
+const editNameState = ref(false)
+function deleteColumn(columnIndex: number) {
+  boardStore.deleteColumn(columnIndex)
+}
 defineProps<{
   column: Column
+  columnIndex: number
 }>();
 </script> 
