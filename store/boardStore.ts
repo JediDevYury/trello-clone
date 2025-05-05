@@ -6,6 +6,7 @@ import boardData from '~/content/taskboards/task-board.json'
 export interface TaskBoard {
   name: string
   columns: Array<{
+    id: string
     name: string
     tasks: Array<{
       id: string
