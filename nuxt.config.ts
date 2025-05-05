@@ -2,7 +2,12 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-
+  content: {
+    experimental: { nativeSqlite: true },
+  },
+  colorMode: {
+    preference: 'light',
+  },
   modules: [
     '@nuxt/fonts',
     '@nuxt/eslint',
@@ -11,6 +16,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxt/scripts',
     '@nuxt/test-utils',
-    '@nuxt/ui'
+    '@nuxt/ui',
+    '@pinia/nuxt'
   ]
 })
