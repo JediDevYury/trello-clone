@@ -1,13 +1,14 @@
 import { defineStore } from 'pinia'
 import {useStorage} from "@vueuse/core";
-// import { ref } from 'vue'
-// import { useAsyncData } from '#app'
 import boardData from '~/content/taskboards/task-board.json'
-import {useId} from 'vue'
-// interface ApiResponse {
-//   success: boolean;
-//   message: string;
-// }
+import type { TaskBoard } from '~/types/TaskBoard'
+import { v4 } from 'uuid';
+
+interface AddTaskProps {
+  name: string
+  columnIndex: number
+}
+
 
 export const useBoardStore = defineStore('boardStore', () => {
 
@@ -24,9 +25,39 @@ export const useBoardStore = defineStore('boardStore', () => {
   })
 
   //actions
+
+  //add task
+  function addTask({
+    name,
+    columnIndex,
+  }: AddTaskProps) {
+    const id = v4()
+
+    const task = {
+      id,
+      name,
+      description: '',
+    }
+    board.value.columns[columnIndex].tasks?.push(task)
+  }
+  //delete task
+  function deleteTask(taskId: string) {
+    for (const column of board.value.columns) {
+      const taskIndex = column.tasks?.findIndex(task => task.id === taskId)
+
+      const isTaskIndexValid = taskIndex !== -1 && taskIndex !== undefined;
+      
+      if(isTaskIndexValid) {
+        column.tasks?.splice(taskIndex, 1)
+        return true
+      }
+    }
+    return false
+  }
+  //add column
   function addColumn(columnName: string) {
     board.value.columns.push({
-      id: useId(),
+      id: v4(),
       name: columnName,
       tasks: []
     })
@@ -40,6 +71,10 @@ export const useBoardStore = defineStore('boardStore', () => {
 
     getTask,
 
+    //task
+    addTask,
+    deleteTask,
+    //column
     addColumn,
     deleteColumn,
   }

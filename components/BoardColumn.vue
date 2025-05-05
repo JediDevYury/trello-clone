@@ -3,21 +3,33 @@ import { defineProps } from "vue"
 import { useBoardStore } from '~/stores/boardStore'
 import type {TaskBoard} from "~/types/TaskBoard";
 
-defineProps<{
+const props = defineProps<{
   column: TaskBoard['columns'][number]
+  columnIndex: number
 }>()
 
 const boardStore = useBoardStore()
 const router = useRouter()
 
 const editNameState = ref(false)
+const newTaskName = ref('')
 
+//delete column
 function deleteColumn(columnIndex: number) {
   boardStore.deleteColumn(columnIndex)
 }
 
+//go to task
 function goToTask(taskId: string) {
   router.push(`/tasks/${taskId}`)
+}
+//create task
+function createTask() {
+  boardStore.addTask({
+    name: newTaskName.value,
+    columnIndex: props.columnIndex, 
+  })
+  newTaskName.value = ''
 }
 </script>
 
@@ -49,5 +61,12 @@ function goToTask(taskId: string) {
         </UCard>
       </li>
     </ul>
+    <UInput 
+      v-model="newTaskName"
+      type="text" 
+      placeholder="Create a new task" 
+      icon="i-heroicons-plus-circle-solid"
+      @keyup.enter="createTask"
+    />
   </UContainer>
 </template>
