@@ -2,6 +2,12 @@
 import { defineProps } from "vue"
 import { useBoardStore } from '~/stores/boardStore'
 import type {TaskBoard} from "~/types/TaskBoard";
+import {DraggableElement} from "~/enums/DraggableElement";
+
+type DropItemParams = {
+  toColumnIndex: number;
+  toTaskIndex?: number;
+}
 
 const props = defineProps<{
   column: TaskBoard['columns'][number]
@@ -36,40 +42,79 @@ type PickUpTaskParams = {
   fromColumnIndex: number;
 };
 
+function pickupColumn(event: DragEvent, fromColumnIndex: number) {
+  if(event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.dropEffect = 'move'
+    event.dataTransfer.setData("type", "column")
+    event.dataTransfer.setData('from-column-index', fromColumnIndex.toString())
+  }
+}
+
 //pick up task
 function pickUpTask(event: DragEvent, {
   fromTaskIndex,
   fromColumnIndex,
 }: PickUpTaskParams) {
+  console.log({
+    fromTaskIndex,
+    fromColumnIndex,
+  })
   if(event.dataTransfer) {
     event.dataTransfer.effectAllowed = 'move'
     event.dataTransfer.dropEffect = 'move'
+    event.dataTransfer.setData("type", "task")
     event.dataTransfer.setData('from-task-index', fromTaskIndex.toString())
     event.dataTransfer.setData('from-column-index', fromColumnIndex.toString())
   }
 }
 
 //drop task
-function dropTask(event: DragEvent, toColumnIndex: number) {
+function dropItem(event: DragEvent, {toColumnIndex, toTaskIndex}: DropItemParams) {
+  const type = event.dataTransfer?.getData('type') as DraggableElement
   const columnIndex = event.dataTransfer?.getData('from-column-index')
-  const taskIndex = event.dataTransfer?.getData('from-task-index')
 
-  if(columnIndex && taskIndex) {
-    boardStore.moveTask({
-      taskIndex: Number.parseInt(taskIndex),
-      columnIndex: Number.parseInt(columnIndex),
-      toColumnIndex,
-    })
+  switch (type) {
+    case DraggableElement.TASK: {
+      const fromTaskIndex = event.dataTransfer?.getData('from-task-index')
+
+      if(columnIndex && fromTaskIndex) {
+        boardStore.moveTask({
+          fromTaskIndex: Number.parseInt(fromTaskIndex),
+          toTaskIndex: toTaskIndex ?? 0,
+          fromColumnIndex: Number.parseInt(columnIndex),
+          toColumnIndex,
+        })
+      }
+      break;
+    }
+    case DraggableElement.COLUMN: {
+      if(!columnIndex) return;
+      boardStore.moveColumn({
+        fromColumnIndex: Number.parseInt(columnIndex),
+        toColumnIndex,
+      })
+
+      break;
+    }
+
+    default: {
+      return;
+    }
   }
 }
 </script>
 
 <template>
-  <UContainer 
+  <UContainer
     class="column" 
     @dragenter.prevent 
-    @dragover.prevent 
-    @drop.stop="dropTask($event, columnIndex)"
+    @dragover.prevent
+    @dragstart.self="pickupColumn($event, columnIndex)"
+    @drop.stop="dropItem($event, {
+      toColumnIndex: columnIndex,
+    })"
+    draggable="true"
   >
     <div class="column-header mb-4">
       <div>
@@ -97,6 +142,10 @@ function dropTask(event: DragEvent, toColumnIndex: number) {
           @dragstart="pickUpTask($event, {
             fromTaskIndex: tastIndex,
             fromColumnIndex: columnIndex,
+          })"
+          @drop.stop="dropItem($event, {
+            toColumnIndex: columnIndex,
+            toTaskIndex: tastIndex,
           })"
         >
           <strong>{{ task.name }}</strong>

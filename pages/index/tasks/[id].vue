@@ -10,7 +10,6 @@ const task = computed(() => {
   return boardStore.getTask(route.params.id)
 })
 
-
 function deleteTask() {
   const isTaskId = !!route.params.id && typeof route.params.id === 'string'
 

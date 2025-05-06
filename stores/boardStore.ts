@@ -10,8 +10,14 @@ interface AddTaskProps {
 }
 
 export interface MoveTaskParams {
-  taskIndex: number
-  columnIndex: number
+  fromTaskIndex: number
+  fromColumnIndex: number
+  toTaskIndex: number
+  toColumnIndex: number
+}
+
+export interface MoveColumnParams {
+  fromColumnIndex: number
   toColumnIndex: number
 }
 
@@ -34,14 +40,15 @@ export const useBoardStore = defineStore('boardStore', () => {
   //add task
 
   function moveTask({
-    taskIndex,
-    columnIndex,
+    fromTaskIndex,
+    toTaskIndex,
+    fromColumnIndex,
     toColumnIndex,
   }: MoveTaskParams) {
-    const task = board.value.columns[columnIndex].tasks?.splice(taskIndex, 1)[0]
+    const task = board.value.columns[fromColumnIndex].tasks?.splice(fromTaskIndex, 1)[0]
 
     if(task) {
-      board.value.columns[toColumnIndex].tasks?.push(task)
+      board.value.columns[toColumnIndex].tasks?.splice(toTaskIndex, 0, task)
     }
   }
 
@@ -72,6 +79,12 @@ export const useBoardStore = defineStore('boardStore', () => {
     }
     return false
   }
+
+  //move column
+  function moveColumn({fromColumnIndex, toColumnIndex}: MoveColumnParams) {
+    const column = board.value.columns.splice(fromColumnIndex, 1)[0]
+    board.value.columns.splice(toColumnIndex, 0, column)
+  }
   //add column
   function addColumn(columnName: string) {
     board.value.columns.push({
@@ -97,5 +110,6 @@ export const useBoardStore = defineStore('boardStore', () => {
     //column
     addColumn,
     deleteColumn,
+    moveColumn,
   }
 })
